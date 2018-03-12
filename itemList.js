@@ -67,7 +67,7 @@ itemList.push({
     locked: false,
     unlocks: [],
     bonus: {workCost:.5},
-    bonusDescription: "Decreases health cost of manual labor."
+    bonusDescription: "Decreases health cost of manual labor, when well rested."
 });
 
 itemList.push({

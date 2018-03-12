@@ -51,7 +51,7 @@ idleApp.controller('IdleAppController', function IdleAppController($scope, $time
     }
 
     $scope.updateSave = function updateSave(newSave) {
-        //There's gotta be a better way to do this
+        //Fix this mess to be recursive?
         for (var key in newSave) {
             if ($scope.data[key] == undefined) {
                 $scope.data[key] = newSave[key];
@@ -278,6 +278,11 @@ idleApp.controller('IdleAppController', function IdleAppController($scope, $time
             bonus += (angular.equals(element.bonus, {}) ? 0 : (element.bonus[type] ? (element.bonus[type] * element.level) : 0));
         });
         
+        //work cost benefit only at > 100 hp
+        if (type == 'workCost' && $scope.data.player.stats.health <= 100) {
+            bonus = 0;
+        }
+
         return bonus;
     }
 
@@ -458,8 +463,8 @@ idleApp.controller('IdleAppController', function IdleAppController($scope, $time
             $scope.data.player.years++;
         }
 
-        if ($scope.data.player.stats.health > 150) {
-            $scope.data.player.stats.health = 150;
+        if ($scope.data.player.stats.health > 125) {
+            $scope.data.player.stats.health = 125;
         }
     }
 
