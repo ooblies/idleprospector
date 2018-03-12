@@ -1,1 +1,243 @@
-<h1>hello</h1>
+<html ng-app="idleApp" >
+    <head>
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-animate.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-aria.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-messages.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.7/angular-material.min.js"></script>
+        <script src="itemList.js"></script>
+        <script src="app.js"></script>
+        <link rel="stylesheet" href="style.css"></script>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.7/angular-material.min.css">
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
+        <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+        
+        <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+    </head>
+    <body>
+        <div ng-controller="IdleAppController" layout="column" flex>
+            <md-toolbar  class="md-toolbar-tools">
+                <button class="md-icon-button md-button md-ink-ripple" type="button" ng-click="toggleNav('left','open')"  hide-gt-md>
+                    <i class="fas fa-plane fa-2x"></i>
+                </button>    
+                <span flex class="flex"></span>
+                <h1 class="center">Idle Prospector</h1>
+                <span flex class="flex"></span>
+                <button class="md-icon-button md-button md-ink-ripple" type="button" ng-click="toggleNav('right','open')"  hide-gt-lg>
+                    <i class="fas fa-shopping-bag fa-2x"></i>
+                </button>   
+            </md-toolbar>
+            <section layout="row" flex>
+                <md-sidenav flex class="md-sidenav-left" md-component-id="left" md-whiteframe="4"  md-is-locked-open="$mdMedia('gt-md')">
+            
+                    <md-toolbar class="md-toolbar-tools">
+                        <h1>Travel</h1>
+                        <span flex class="flex"></span>
+                        <button class="md-icon-button md-button md-ink-ripple" type="button" ng-click="toggleNav('left','close')" hide-gt-md>
+                            <i class="fas fa-times fa-2x"></i>
+                        </button>   
+                    </md-toolbar>
+            
+                    <md-content class="md-padding">
+                        <md-button ng-show="data.unlocks.town" class="md-raised md-primary" ng-click="travel('town', 6);" ng-disabled="!data.paused || data.currentTravelDestination == 'town'">Walk to Town ({{6 - getBonusFromItems('travelTime')}} hours)</md-button>
+                        <md-button ng-show="data.unlocks.mine" class="md-raised md-primary" ng-click="travel('mine', 12);" ng-disabled="!data.paused || data.currentTravelDestination == 'mine'">Walk to the Mine ({{12 - getBonusFromItems('travelTime')}} hours)</md-button>
+                        <md-button ng-show="data.unlocks.town" class="md-raised md-primary" ng-click="travel('home', 6);" ng-disabled="!data.paused || data.currentTravelDestination == 'home'">Walk Home ({{6 - getBonusFromItems('travelTime')}} hours)</md-button>                            
+                    </md-content>
+                </md-sidenav>
+            
+                <md-content flex  layout="column">
+                    <div flex class="md-padding playerInfo">
+                        <div class="flexBox">                            
+                            <h2>{{data.player.firstName}} {{data.player.lastName}}</h2>
+                            <span flex></span>
+                            <h4>{{data.player.money | currency}}</h4>                        
+                        </div>
+                        <div class="flexBox">
+                            <h4>Age: {{data.player.years}} years, {{data.player.months}} months, {{data.player.days}} days, {{data.player.hours}} hours old.</h4>
+                            <span flex></span>
+                            <h4>{{data.player.gold | number : 2}}oz. gold</h4>                        
+                        </div>
+                        <div class="flexBox">
+                            <span>Health: {{data.player.stats.health | number : 0}}</span>
+                            <span flex></span>
+                            <span> Rations: {{data.items.ration}}</span>                        
+                        </div>
+                        
+                        
+                    </div>
+                        <md-progress-linear md-mode="determinate" value="{{data.currentActionProgress}}" ng-show="data.timerMode == 'determinate'"></md-progress-linear>
+                        <md-progress-linear md-mode="indeterminate" ng-show="data.timerMode == 'indeterminate'"></md-progress-linear>
+                    <div flex>
+                        <div ng-hide="data.currentAction == 'travel' && data.currentActionProgress < 90">
+                            <div ng-if="data.currentTravelDestination == 'home'">       
+                                <div class="md-padding">           
+                                    <h3 class="md-flex center">Homestead</h3>
+                                    <md-divider></md-divider>
+                                    <br/>
+                                    <p>Pan for Gold:             
+                                            <md-button class="md-raised md-primary" ng-click="pan(2);" ng-disabled="!data.paused">2 Hours</md-button>
+                                            <md-button class="md-raised md-primary" ng-click="pan(4);" ng-disabled="!data.paused">4 Hours</md-button>
+                                            <md-button class="md-raised md-primary" ng-click="pan(8);" ng-disabled="!data.paused">8 Hours</md-button></p>
+                                        <p>Sleep: 
+                                            <md-button class="md-raised md-primary" ng-click="sleep(2);" ng-disabled="!data.paused">2 Hours</md-button> 
+                                            <md-button class="md-raised md-primary" ng-click="sleep(4);" ng-disabled="!data.paused">4 Hours</md-button>
+                                            <md-button class="md-raised md-primary" ng-click="sleep(8);" ng-disabled="!data.paused">8 Hours</md-button></p>
+                                        <p>Eat
+                                            <md-button class="md-raised md-primary" ng-click="eatRation();" ng-disabled="data.items.ration <= 0">Rations</md-button>
+                                        </p>
+                                </div>                                
+                            </div>
+                            <div ng-if="data.currentTravelDestination == 'town'">       
+                                <h3 class="md-flex center">Town</h3>
+                                <md-divider></md-divider>
+                                <md-nav-bar md-selected-nav-item="currentTownLocation">
+                                    <md-nav-item md-nav-click="goto('Bank')" name="Bank">
+                                        Bank
+                                    </md-nav-item>
+                                    <md-nav-item md-nav-click="goto('Store')" name="Store" ng-show="data.unlocks.store">
+                                        General Store
+                                    </md-nav-item>
+                                    <md-nav-item md-nav-click="goto('Blacksmith')" name="Blacksmith" ng-show="data.unlocks.blacksmith">
+                                        Blacksmith
+                                    </md-nav-item>
+                                    <md-nav-item md-nav-click="goto('Saloon')" name="Saloon" ng-show="data.unlocks.mine">
+                                        Saloon
+                                    </md-nav-item>
+                                </md-nav-bar>
+
+                                <div ng-hide="currentTownLocation != 'Bank'" class="md-padding">
+                                    <p>Sell Gold:
+                                        <md-button class="md-raised md-primary" ng-click="sellGold(1);" ng-disabled="!data.paused || data.player.gold < 1">1oz.</md-button>
+                                        <md-button class="md-raised md-primary" ng-click="sellGold(16);" ng-disabled="!data.paused || data.player.gold < 16">16oz.</md-button>
+                                        <md-button class="md-raised md-primary" ng-click="sellGold(data.player.gold);" ng-disabled="!data.paused || data.player.gold <= 0">All</md-button>
+                                    </p>
+
+                                    <p> 
+                                        Purchase Mine: <md-button class="md-raised md-primary" ng-click="openMine()" ng-disabled="data.unlocks.mine || data.player.money < 100">$100</md-button>
+                                    </p>
+                                </div>
+                                <div ng-hide="currentTownLocation != 'Store'" class="md-padding">
+                                    Purchase Ration: <md-button class="md-raised md-primary" ng-click="buyRation()" ng-disabled="data.player.money < 1">$1</md-button>
+                                </div>  
+                                <div ng-hide="currentTownLocation != 'Blacksmith'" class="md-padding">
+                                    <h4>Shop</h4>
+                                    <div ng-repeat="item in buyableItems()" style="max-height:50px;">
+                                        <md-button class="md-raised md-primary" ng-click="buy(item.id);" ng-disabled="data.player.money < (item.level*item.level*item.baseCost + item.baseCost)" >
+                                            <md-tooltip md-direction="right">{{item.description}} {{item.bonusDescription}}</md-tooltip>
+                                            {{item.name}} (${{(item.level*item.level*item.baseCost + item.baseCost)}})                                            
+                                        </md-button>
+                                    </div>
+                                    <!--<div layout="row" layout-wrap> 
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-xs-12" ng-repeat="item in buyableItems()" >
+                                            <md-card class="itemCard">
+                                                <md-card-title>
+                                                    <md-card-title-text>
+                                                        <span class="md-headline">{{item.name}}</span>
+                                                        <span class="md-subhead">{{item.description}}</span>
+                                                    </md-card-title-text>
+                                                    <md-card-title-media>
+                                                        <div class="md-media-sm card-media"><img src="{{item.image}}"/></div>
+                                                    </md-card-title-media>
+                                                </md-card-title>
+                                                <md-card-content>
+                                                    {{item.bonusDescription}}
+                                                </md-card-content>
+                                                <md-card-actions layout="row">
+                                                    <div flex="65" style="margin:10px;"><span ng-hide="item.level == 0" >lvl. {{item.level}}</span></div>
+                                                    <div flex>
+                                                        <md-button class="md-primary" ng-hide="item.level == 0" ng-disabled="data.player.money < (item.level*item.level*item.baseCost + item.baseCost)" ng-click="buy(item.id);">Upgrade (${{(item.level*item.level*item.baseCost + item.baseCost)}})</md-button>
+                                                        <md-button class="md-primary" ng-hide="item.level > 0" ng-disabled="data.player.money < (item.level*item.level*item.baseCost + item.baseCost)" ng-click="buy(item.id);">Purchase (${{(item.level*item.level*item.baseCost + item.baseCost)}})</md-button>
+                                                    </div>
+                                                    
+                                                </md-card-actions>
+                                            </md-card>
+                                        </div>
+                                    </div>-->
+                                </div>                                 
+                                <div ng-hide="currentTownLocation != 'Saloon'" class="md-padding">                               
+                                    Hire Miner: <md-button class="md-raised md-primary" ng-disabled="data.player.money < $" ng-click="hire('miner')">
+                                                    <md-tooltip md-direction="right">Mines gold for you at the Mine.</md-tooltip>
+                                                    $4/day
+                                                </md-button>
+                                    <br/>
+                                    Hire Courier: <md-button class="md-raised md-primary" ng-disabled="data.player.money < $" ng-click="hire('courier')">    
+                                        <md-tooltip md-direction="right">Transfers gold from the mine to the bank.</md-tooltip>
+                                        $10/day
+                                    </md-button>
+                                    <!--<p ng-show="data.unlocks.caravan">
+                                        Hire caravan: <md-button class="md-raised md-primary" ng-disabled="data.player.money < $" ng-click="hire('caravan')">$10/day</md-button>
+                                    </p>-->
+                                </div>  
+                            </div>
+                            <div ng-if="data.currentTravelDestination == 'mine'">    
+                                Gold: {{data.mineGold | number : 2}}oz.
+                                <md-button class="md-primary md-raised" ng-click="collectGoldFromMine()" ng-disabled="data.mineGold <= 0">Collect Gold</md-button>
+                            </div>  
+                        </div>
+                        <div ng-show="data.currentAction == 'travel' && data.currentActionProgress < 99">       
+                                <h3 class="md-flex center">Traveling...</h3>
+                                <md-divider></md-divider>
+                                <br/>
+                            <div class="center">
+                                <img src="https://orig00.deviantart.net/6af9/f/2014/350/3/4/galloping_horse_gif_sketch_by_mikachanx-d8a3g2o.gif"/>
+                            </div>                            
+                        </div>
+                        
+                    </div>
+                    </md-content>
+                <md-sidenav flex class="md-sidenav-right" md-component-id="right" md-whiteframe="4" md-is-locked-open="$mdMedia('gt-lg')">
+                    <md-toolbar class="md-toolbar-tools">
+                        <h1>Inventory</h1>
+                        <span flex class="flex"></span>
+                        <button class="md-icon-button md-button md-ink-ripple" type="button" ng-click="toggleNav('right','close')" hide-gt-lg>
+                            <i class="fas fa-times fa-2x"></i>
+                        </button>   
+                    </md-toolbar>
+                    <div ng-repeat="item in ownedItems()" style="max-height:125px; max-width:100px;">
+                        <span class="center">{{item.name}} lvl. {{item.level}}</span>
+                        <md-tooltip md-direction="left">{{item.description}} {{item.bonusDescription}}</md-tooltip>
+                        <img style="max-height:75px;" src="{{item.image}}"/>                        
+                    </div>
+                </md-sidenav>
+            </section>
+                
+            <md-toolbar class="md-scroll-shrink">
+                <div layout="row" layout-align="center center" flex>
+                    <md-button class='md-raised md-warn' ng-click='deleteSave();'>Clear Save</md-button>        
+                    <md-button class='md-raised md-warn' ng-click='saveGame();'>Save</md-button>        
+                    <md-button class='md-raised md-warn' ng-click='loadGame();'>Load Save</md-button>   
+                    
+                    <section layout="row" layout-align="center center" class="groupContainer">                 
+                        <md-button class="md-raised md-warn group left" ng-click="data.player.gold = data.player.gold - 1">-</md-button>
+                        <md-button class="md-raised md-warn group middle">Gold</md-button>
+                        <md-button class="md-raised md-warn group right" ng-click="data.player.gold = data.player.gold + 1">+</md-button>
+                    </section>
+                    
+                    <section layout="row" layout-align="center center" class="groupContainer">                 
+                        <md-button class="md-raised md-warn group left" ng-click="data.player.money = data.player.money - 5">-</md-button>
+                        <md-button class="md-raised md-warn group middle">$</md-button>
+                        <md-button class="md-raised md-warn group right" ng-click="data.player.money = data.player.money + 5">+</md-button>
+                    </section>
+                    
+                    <section layout="row" layout-align="center center" class="groupContainer">                 
+                        <md-button class="md-raised md-warn group left" ng-click="data.player.stats.health = data.player.stats.health - 10">-</md-button>
+                        <md-button class="md-raised md-warn group middle">Health</md-button>
+                        <md-button class="md-raised md-warn group right" ng-click="data.player.stats.health = data.player.stats.health + 10">+</md-button>
+                    </section>
+                    
+                    <section layout="row" layout-align="center center" class="groupContainer">                 
+                        <md-button class="md-raised md-warn group left" ng-click="data.player.years = data.player.years - 1">-</md-button>
+                        <md-button class="md-raised md-warn group middle">Age</md-button>
+                        <md-button class="md-raised md-warn group right" ng-click="data.player.years = data.player.years + 1">+</md-button>
+                    </section>
+                                       
+                </div>
+            </md-toolbar>
+        </div>  
+    </body>
+</html>
