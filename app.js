@@ -336,10 +336,15 @@ idleApp.controller('IdleAppController', function IdleAppController($scope, $time
                 $scope.data.timerMode = 'determinate';
                 $scope.data.player.employees.miner = 0;
             }
+            
+            if ($scope.data.player.stats.years >= 50) {   
+                $scope.data.timerMode = 'determinate';         
+                $scope.die();           
+            }
         }
     }
 
-    $scope.die = function die() { 
+    $scope.die = function die() {         
         var confirm = $mdDialog.confirm()
             .parent(angular.element(document.querySelector('#popupContainer')))
             .clickOutsideToClose(false)
@@ -385,7 +390,7 @@ idleApp.controller('IdleAppController', function IdleAppController($scope, $time
 
         $scope.updatePlayerStats();
 
-        if ($scope.data.player.stats.health <= 0 && $scope.data.items.ration == 0) {            
+        if (($scope.data.player.stats.health <= 0 && $scope.data.items.ration == 0) || $scope.data.player.years >= 50) {            
             $scope.die();           
         } else {
             if ($scope.data.player.stats.health <= 0) {
@@ -399,7 +404,7 @@ idleApp.controller('IdleAppController', function IdleAppController($scope, $time
             } else {
                 $scope.data.paused = true;
             }
-        }        
+        } 
     };
 
     $scope.travel = function travel(location, hours) {
@@ -466,6 +471,7 @@ idleApp.controller('IdleAppController', function IdleAppController($scope, $time
         if ($scope.data.player.stats.health > 125) {
             $scope.data.player.stats.health = 125;
         }
+
     }
 
     
